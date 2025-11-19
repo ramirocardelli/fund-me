@@ -12,7 +12,7 @@ import { lemonSDK } from '@/lib/lemon-sdk-mock';
 import { Spinner } from '@/components/ui/spinner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { AlertCircle, Wallet, ArrowLeft, TrendingUp, Calendar, User } from 'lucide-react';
+import { AlertCircle, TrendingUp, Calendar, User } from 'lucide-react';
 
 export default function ProjectDetailPage() {
   const params = useParams();
@@ -114,35 +114,14 @@ export default function ProjectDetailPage() {
   const progress = (project.currentAmount / project.goalAmount) * 100;
   const remaining = project.goalAmount - project.currentAmount;
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <Link href="/projects">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Volver
-              </Button>
-            </Link>
-            <div className="bg-secondary rounded-lg p-2">
-              <Wallet className="h-5 w-5 text-secondary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">Detalle del Proyecto</h1>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-6 sm:py-8">
-        <div className="max-w-4xl mx-auto">
+    return (
+      <div className="min-h-screen bg-background pb-24">
+        <main className="px-4 pt-6">
           {/* Project Header */}
           <div className="mb-8">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+            <h1 className="text-2xl font-bold text-foreground mb-4">
               {project.title}
-            </h2>
+            </h1>
             
             <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-6">
               <div className="flex items-center gap-2">
@@ -225,8 +204,7 @@ export default function ProjectDetailPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
-      </main>
+        </main>
 
       {/* Fund Dialog */}
       <FundProjectDialog
@@ -236,14 +214,6 @@ export default function ProjectDetailPage() {
         onSuccess={handleFundSuccess}
       />
 
-      {/* Footer */}
-      <footer className="border-t border-border mt-16 py-6">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-xs text-muted-foreground">
-            Built with LemonCash SDK • Mock mode for development
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }
