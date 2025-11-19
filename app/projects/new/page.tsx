@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { CreateProjectForm } from '@/components/create-project-form';
 import { lemonSDK } from '@/lib/lemon-sdk-mock';
 import { Spinner } from '@/components/ui/spinner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Wallet, ArrowLeft } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 export default function NewProjectPage() {
   const router = useRouter();
@@ -76,57 +75,26 @@ export default function NewProjectPage() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link href="/projects">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Volver
-                </Button>
-              </Link>
-              <div className="bg-secondary rounded-lg p-2">
-                <Wallet className="h-5 w-5 text-secondary-foreground" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-foreground">Crear Proyecto</h1>
-                <p className="text-xs text-muted-foreground hidden sm:block">Nuevo proyecto de crowdfunding</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-6 sm:py-8">
-        <div className="max-w-2xl mx-auto">
+    return (
+      <div className="min-h-screen bg-background pb-24">
+        <main className="px-4 pt-6">
           <div className="mb-6">
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
-              Crea tu Proyecto
-            </h2>
+            <h1 className="text-2xl font-bold text-foreground mb-1">
+              Crear Proyecto
+            </h1>
             <p className="text-sm text-muted-foreground">
-              Completa el formulario para iniciar tu proyecto de crowdfunding
+              Completá el formulario para iniciar tu crowdfunding
             </p>
           </div>
+          
+          <div className="max-w-2xl mx-auto">
 
           <CreateProjectForm
             onSuccess={handleSuccess}
             onCancel={() => router.push('/projects')}
           />
-        </div>
-      </main>
+        </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border mt-16 py-6">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-xs text-muted-foreground">
-            Built with LemonCash SDK • Mock mode for development
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }
