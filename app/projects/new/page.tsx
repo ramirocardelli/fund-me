@@ -88,14 +88,13 @@ export default function NewProjectPage() {
           </div>
           
           <div className="max-w-2xl mx-auto">
-
-          <CreateProjectForm
-            onSuccess={handleSuccess}
-            onCancel={() => router.push('/projects')}
-          />
+            <CreateProjectForm
+              onSuccess={handleSuccess}
+              onCancel={() => router.push('/projects')}
+            />
+          </div>
         </main>
-
-    </div>
-  );
-}
+      </div>
+    );
+  }
 
