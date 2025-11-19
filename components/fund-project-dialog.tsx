@@ -89,73 +89,82 @@ export function FundProjectDialog({ project, open, onOpenChange, onSuccess }: Fu
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-card border-border sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-foreground">Fund Project</DialogTitle>
-          <DialogDescription className="text-muted-foreground">
+          <DialogTitle className="text-foreground text-xl">Apoyar Proyecto</DialogTitle>
+          <DialogDescription className="text-muted-foreground mt-1">
             {project?.title}
           </DialogDescription>
         </DialogHeader>
 
         {project && (
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Current:</span>
-                <span className="text-secondary font-semibold">${project.currentAmount.toFixed(2)}</span>
+          <div className="space-y-5 py-4">
+            <div className="space-y-3 p-4 rounded-xl bg-muted/30 border border-border/50">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Actual</span>
+                <span className="text-base font-semibold text-[#00D26B]">
+                  ${project.currentAmount.toFixed(0)} ARS
+                </span>
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Goal:</span>
-                <span className="text-foreground">${project.goalAmount.toFixed(2)}</span>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Meta</span>
+                <span className="text-base font-medium text-foreground">
+                  ${project.goalAmount.toFixed(0)} ARS
+                </span>
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Remaining:</span>
-                <span className="text-foreground">${remaining.toFixed(2)}</span>
+              <div className="pt-2 border-t border-border/50">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Falta</span>
+                  <span className="text-lg font-bold text-foreground">
+                    ${remaining.toFixed(0)} ARS
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="amount" className="text-foreground">Funding Amount (USD)</Label>
-              <Input
-                id="amount"
-                type="number"
-                step="0.01"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="10.00"
-                className="bg-input text-foreground border-border"
-                autoFocus
-              />
-            </div>
-
-            <div className="bg-muted/50 p-3 rounded-md border border-border">
-              <p className="text-xs text-muted-foreground break-all">
-                <span className="font-semibold text-foreground">Recipient:</span> {project.creatorAddress}
-              </p>
+            <div className="space-y-3">
+              <Label htmlFor="amount" className="text-foreground text-sm font-medium">
+                Monto a aportar
+              </Label>
+              <div className="relative">
+                <Input
+                  id="amount"
+                  type="number"
+                  step="0.01"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="1000"
+                  className="bg-input text-foreground border-border h-14 text-xl pl-4 pr-16 font-semibold"
+                  autoFocus
+                />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
+                  ARS
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        <DialogFooter className="flex-col sm:flex-row gap-2">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="w-full border-border text-foreground hover:bg-muted"
-            disabled={loading}
-          >
-            Cancel
-          </Button>
+        <DialogFooter className="flex-col gap-3 sm:gap-3">
           <Button
             onClick={handleFund}
-            className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90"
+            className="w-full h-12 bg-[#00D26B] text-black hover:bg-[#00B85C] font-semibold text-base"
             disabled={loading}
           >
             {loading ? (
               <>
                 <Spinner className="mr-2 h-4 w-4" />
-                Processing...
+                Procesando...
               </>
             ) : (
-              'Confirm Funding'
+              'Confirmar Aporte'
             )}
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => onOpenChange(false)}
+            className="w-full text-muted-foreground hover:text-foreground hover:bg-transparent"
+            disabled={loading}
+          >
+            Cancelar
           </Button>
         </DialogFooter>
       </DialogContent>

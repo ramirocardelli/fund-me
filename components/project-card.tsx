@@ -1,7 +1,9 @@
 import { Project } from '@/lib/types';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { ChevronRight, TrendingUp } from 'lucide-react';
+import Link from 'next/link';
 
 interface ProjectCardProps {
   project: Project;
@@ -13,40 +15,62 @@ export function ProjectCard({ project, onFund }: ProjectCardProps) {
   const remaining = project.goalAmount - project.currentAmount;
 
   return (
-    <Card className="bg-card border-border hover:border-secondary transition-colors">
-      <CardHeader>
-        <CardTitle className="text-foreground text-balance">{project.title}</CardTitle>
-        <p className="text-sm text-muted-foreground">by {project.creatorName}</p>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-sm text-foreground/80 line-clamp-3">{project.description}</p>
-        
-        <div className="space-y-2">
-          <Progress value={progress} className="h-2" />
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-secondary font-semibold">${project.currentAmount.toFixed(2)}</span>
-            <span className="text-muted-foreground">Goal: ${project.goalAmount.toFixed(2)}</span>
+    <Card className="bg-card border border-border/50 hover:border-[#00D26B]/50 transition-all overflow-hidden">
+      {/* Header clickeable para ver detalle */}
+      <Link href={`/projects/${project.id}`}>
+        <div className="p-4 pb-3 cursor-pointer hover:bg-muted/20 transition-colors">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-foreground mb-1 truncate">
+                {project.title}
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                por {project.creatorName}
+              </p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
           </div>
-          {remaining > 0 && (
-            <p className="text-xs text-muted-foreground">${remaining.toFixed(2)} remaining</p>
+        </div>
+      </Link>
+
+      {/* Progress y montos */}
+      <div className="px-4 pb-4 space-y-3">
+        <Progress value={progress} className="h-1.5" />
+        
+        <div className="flex items-baseline justify-between">
+          <div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-bold text-[#00D26B]">
+                ${project.currentAmount.toFixed(0)}
+              </span>
+              <span className="text-sm text-muted-foreground">ARS</span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              de ${project.goalAmount.toFixed(0)} meta
+            </p>
+          </div>
+          
+          {progress < 100 && (
+            <div className="text-right">
+              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#00D26B]/10">
+                <TrendingUp className="h-3 w-3 text-[#00D26B]" />
+                <span className="text-xs font-semibold text-[#00D26B]">
+                  {progress.toFixed(0)}%
+                </span>
+              </div>
+            </div>
           )}
         </div>
 
-        <div className="pt-2 border-t border-border">
-          <p className="text-xs text-muted-foreground break-all">
-            Wallet: {project.creatorAddress.slice(0, 10)}...{project.creatorAddress.slice(-8)}
-          </p>
-        </div>
-      </CardContent>
-      <CardFooter>
+        {/* Botón de acción */}
         <Button 
           onClick={() => onFund(project)}
-          className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90"
+          className="w-full h-11 bg-[#00D26B] text-black hover:bg-[#00B85C] font-semibold transition-colors"
           disabled={progress >= 100}
         >
-          {progress >= 100 ? 'Fully Funded' : 'Fund Project'}
+          {progress >= 100 ? '✓ Financiado' : 'Apoyar Proyecto'}
         </Button>
-      </CardFooter>
+      </div>
     </Card>
   );
 }
