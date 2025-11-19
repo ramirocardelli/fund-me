@@ -100,7 +100,7 @@ export default function Home() {
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#00D26B] to-[#00B85C] flex items-center justify-center">
                 <Heart className="h-5 w-5 text-black" />
               </div>
-              <span className="text-lg font-semibold text-foreground">LemonFund</span>
+              <span className="text-lg font-semibold text-foreground">Fund Me!</span>
             </div>
             
             <Link href="/projects/mine">

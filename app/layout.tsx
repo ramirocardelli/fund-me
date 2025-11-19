@@ -8,7 +8,7 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'LemonFund - Crowdfunding with LemonCash',
+  title: 'Fund Me! - Crowdfunding with LemonCash',
   description: 'Create and fund crowdfunding projects using LemonCash',
   generator: 'v0.app',
 }
