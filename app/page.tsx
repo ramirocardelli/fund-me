@@ -92,26 +92,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Header Simple estilo Lemon */}
-      <header className="bg-background sticky top-0 z-10 border-b border-border/40">
-        <div className="px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                <Heart className="h-5 w-5 text-black" />
-              </div>
-              <span className="text-lg font-semibold text-foreground">Fund Me!</span>
-            </div>
-            
-            <Link href="/projects/me">
-              <Button variant="ghost" size="sm" className="text-muted-foreground">
-                Mis Proyectos
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
-
       <main className="px-4 pt-6">
         {/* Título simple */}
         <div className="mb-6">
