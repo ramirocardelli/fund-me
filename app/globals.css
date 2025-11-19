@@ -5,25 +5,25 @@
 
 /* Custom color scheme for LemonCash app - Black primary, Neon green secondary, White text */
 :root {
-  --background: oklch(0.145 0 0); /* Black background */
-  --foreground: oklch(1 0 0); /* White text */
-  --card: oklch(0.2 0 0); /* Dark gray for cards */
-  --card-foreground: oklch(1 0 0); /* White text on cards */
+  --background: #000000;
+  --foreground: #FFFFFF;
+  --card: oklch(0.2 0 0);
+  --card-foreground: #FFFFFF;
   --popover: oklch(0.2 0 0);
-  --popover-foreground: oklch(1 0 0);
-  --primary: oklch(0.145 0 0); /* Black */
-  --primary-foreground: oklch(0.88 0.25 135); /* Neon green #2bfd3c */
-  --secondary: oklch(0.88 0.25 135); /* Neon green #2bfd3c */
-  --secondary-foreground: oklch(0.145 0 0); /* Black text on neon green */
+  --popover-foreground: #FFFFFF;
+  --primary: #000000;
+  --primary-foreground: #00F068;
+  --secondary: #00F068;
+  --secondary-foreground: #000000;
   --muted: oklch(0.3 0 0);
   --muted-foreground: oklch(0.7 0 0);
-  --accent: oklch(0.88 0.25 135); /* Neon green */
-  --accent-foreground: oklch(0.145 0 0);
+  --accent: #00F068;
+  --accent-foreground: #000000;
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.3 0 0);
   --input: oklch(0.25 0 0);
-  --ring: oklch(0.88 0.25 135); /* Neon green */
+  --ring: #00F068;
   --radius: 0.5rem;
 }
 
