@@ -22,7 +22,7 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
     title: '',
     description: '',
     goalAmount: '',
-    goalCurrency: 'USD',
+    goalCurrency: 'USDC',
     imageUrl: '',
     startDate: '',
     endDate: '',
@@ -182,10 +182,11 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
             <div className="space-y-2">
               <Label htmlFor="goalCurrency" className="text-foreground">Moneda *</Label>
               <Input
+                disabled
                 id="goalCurrency"
                 value={formData.goalCurrency}
                 onChange={(e) => setFormData({ ...formData, goalCurrency: e.target.value })}
-                placeholder="USD"
+                placeholder="USDc"
                 className="bg-input text-foreground border-border"
                 required
               />
