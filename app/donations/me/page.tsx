@@ -5,79 +5,32 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Donation } from '@/lib/types';
 import { getDonations } from '@/lib/storage';
-import { initializeDummyData } from '@/lib/dummy-data';
-import { authenticate, TransactionResult } from '@/lib/lemon-sdk-mock';
 import { Spinner } from '@/components/ui/spinner';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Heart, Calendar, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 
 export default function MyDonationsPage() {
-  const [authenticated, setAuthenticated] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
-  const [authError, setAuthError] = useState<string | null>(null);
   const [donations, setDonations] = useState<Donation[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Inicializar datos dummy si no existen
-    initializeDummyData();
-    
-    const doAuthenticate = async () => {
-      try {
-        const response = await authenticate();
-        
-        if (response.result === TransactionResult.SUCCESS) {
-          setAuthenticated(true);
-          setAuthError(null);
-          loadDonations();
-        } else {
-          setAuthError(response.result || 'Authentication failed');
-        }
-      } catch (error) {
-        setAuthError('Failed to connect to LemonCash. Please try again later.');
-      } finally {
-        setAuthLoading(false);
-      }
-    };
-
-    doAuthenticate();
+    loadDonations();
   }, []);
 
   const loadDonations = () => {
     const allDonations = getDonations();
     setDonations(allDonations);
+    setLoading(false);
   };
 
-  if (authLoading) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <div className="text-center space-y-4">
           <Spinner className="h-12 w-12 text-secondary mx-auto" />
           <div>
-            <h2 className="text-xl font-semibold text-foreground">Conectando con LemonCash</h2>
-            <p className="text-sm text-muted-foreground mt-2">Autenticando tu sesión...</p>
+            <h2 className="text-xl font-semibold text-foreground">Cargando</h2>
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (authError) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
-        <div className="max-w-md w-full space-y-4">
-          <Alert variant="destructive" className="border-destructive/50">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="text-sm">
-              {authError}
-            </AlertDescription>
-          </Alert>
-          <Button 
-            onClick={() => window.location.reload()}
-            className="w-full bg-secondary text-black hover:bg-[#00B85C]"
-          >
-            Reintentar Conexión
-          </Button>
         </div>
       </div>
     );

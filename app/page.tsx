@@ -4,45 +4,17 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ProjectCard } from '@/components/project-card';
 import { FundProjectDialog } from '@/components/fund-project-dialog';
-import { authenticate, TransactionResult } from '@/lib/lemon-sdk-mock';
 import { getProjects } from '@/lib/storage';
-import { initializeDummyData } from '@/lib/dummy-data';
 import { Project } from '@/lib/types';
-import { Spinner } from '@/components/ui/spinner';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Heart } from 'lucide-react';
+import { Heart } from 'lucide-react';
 
 export default function Home() {
-  const [authenticated, setAuthenticated] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
-  const [authError, setAuthError] = useState<string | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showFundDialog, setShowFundDialog] = useState(false);
 
   useEffect(() => {
-    // Inicializar datos dummy si no existen
-    initializeDummyData();
-    
-    const doAuthenticate = async () => {
-      try {
-        const response = await authenticate();
-        
-        if (response.result === TransactionResult.SUCCESS) {
-          setAuthenticated(true);
-          setAuthError(null);
-          loadProjects();
-        } else {
-          setAuthError(response.result || 'Authentication failed');
-        }
-      } catch (error) {
-        setAuthError('Failed to connect to LemonCash. Please try again later.');
-      } finally {
-        setAuthLoading(false);
-      }
-    };
-
-    doAuthenticate();
+    loadProjects();
   }, []);
 
   const loadProjects = () => {
@@ -57,41 +29,6 @@ export default function Home() {
   const handleFundSuccess = () => {
     loadProjects();
   };
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
-        <div className="text-center space-y-4">
-          <Spinner className="h-12 w-12 text-secondary mx-auto" />
-          <div>
-            <h2 className="text-xl font-semibold text-foreground">Conectando con LemonCash</h2>
-            <p className="text-sm text-muted-foreground mt-2">Autenticando tu sesión...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (authError) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
-        <div className="max-w-md w-full space-y-4">
-          <Alert variant="destructive" className="border-destructive/50">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="text-sm">
-              {authError}
-            </AlertDescription>
-          </Alert>
-          <Button 
-            onClick={() => window.location.reload()}
-            className="w-full bg-secondary text-black hover:bg-secondary"
-          >
-            Reintentar Conexión
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background pb-20">

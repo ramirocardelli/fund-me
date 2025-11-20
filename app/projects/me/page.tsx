@@ -5,111 +5,49 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserProfile, Project, Donation } from '@/lib/types';
 import { getUserProfile, getProjects, getDonations } from '@/lib/storage';
-import { initializeDummyData } from '@/lib/dummy-data';
-import { authenticate, TransactionResult } from '@/lib/lemon-sdk-mock';
 import { Spinner } from '@/components/ui/spinner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, User, Wallet, Calendar, TrendingUp, Heart, Plus, Link as LinkIcon } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ProfilePage() {
-  const [authenticated, setAuthenticated] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
-  const [authError, setAuthError] = useState<string | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [myCampaigns, setMyCampaigns] = useState<Project[]>([]);
   const [myDonations, setMyDonations] = useState<Donation[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Inicializar datos dummy si no existen (esto debe ejecutarse primero)
-    initializeDummyData();
-    
-    // Cargar datos del perfil inmediatamente después de inicializar
-    // No esperar a la autenticación para mostrar el perfil
+    loadProfileData();
+  }, []);
+
+  const loadProfileData = () => {
     const profileData = getUserProfile();
     if (profileData) {
       setProfile(profileData);
-      loadProfileData(profileData);
-    }
-    
-    const doAuthenticate = async () => {
-      try {
-        const response = await authenticate();
-        
-        if (response.result === TransactionResult.SUCCESS) {
-          setAuthenticated(true);
-          setAuthError(null);
-          // Recargar datos después de autenticación
-          const updatedProfile = getUserProfile();
-          if (updatedProfile) {
-            setProfile(updatedProfile);
-            loadProfileData(updatedProfile);
-          }
-        } else {
-          setAuthError(response.result || 'Authentication failed');
-        }
-      } catch (error) {
-        setAuthError('Failed to connect to LemonCash. Please try again later.');
-      } finally {
-        setAuthLoading(false);
-      }
-    };
 
-    doAuthenticate();
-  }, []);
-
-  const loadProfileData = (userProfile?: UserProfile | null) => {
-    // Cargar perfil si no se pasó como parámetro
-    const profile = userProfile || getUserProfile();
-    if (profile) {
-      setProfile(profile);
-
-      // Cargar campañas del usuario (simulando que el usuario tiene algunas campañas)
+      // Load user campaigns (simulating that user created first 3 campaigns)
       const allProjects = getProjects();
-      // Simular que el usuario creó las primeras 3 campañas
       const userCampaigns = allProjects.slice(0, 3);
       setMyCampaigns(userCampaigns);
 
-      // Cargar donaciones del usuario
+      // Load user donations
       const allDonations = getDonations();
-      // Filtrar donaciones que coincidan con la wallet del usuario
       const userDonations = allDonations.filter(
-        d => d.donorAddress.toLowerCase() === profile.walletAddress.toLowerCase()
+        d => d.donorAddress.toLowerCase() === profileData.walletAddress.toLowerCase()
       );
       setMyDonations(userDonations);
     }
+    setLoading(false);
   };
 
-  if (authLoading) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <div className="text-center space-y-4">
           <Spinner className="h-12 w-12 text-secondary mx-auto" />
           <div>
-            <h2 className="text-xl font-semibold text-foreground">Conectando con LemonCash</h2>
-            <p className="text-sm text-muted-foreground mt-2">Autenticando tu sesión...</p>
+            <h2 className="text-xl font-semibold text-foreground">Cargando perfil</h2>
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (authError) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
-        <div className="max-w-md w-full space-y-4">
-          <Alert variant="destructive" className="border-destructive/50">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="text-sm">
-              {authError}
-            </AlertDescription>
-          </Alert>
-          <Button 
-            onClick={() => window.location.reload()}
-            className="w-full bg-secondary text-black hover:bg-[#00B85C]"
-          >
-            Reintentar Conexión
-          </Button>
         </div>
       </div>
     );
