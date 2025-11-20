@@ -229,33 +229,35 @@ export default function ProfilePage() {
               {myCampaigns.map((campaign) => {
                 const progress = (campaign.currentAmount / campaign.goalAmount) * 100;
                 return (
-                  <Link key={campaign.id} href={`/projects/${campaign.id}`}>
-                    <Card className="bg-card border-border/50 hover:border-secondary/50 transition-colors">
-                      <CardContent className="pt-4 pb-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-foreground mb-1 truncate">
-                              {campaign.title}
-                            </h3>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                              <span>{progress.toFixed(0)}% completado</span>
+                  <div key={campaign.id}>
+                    <Link href={`/projects/${campaign.id}`}>
+                      <Card className="bg-card border-border/50 hover:border-secondary/50 transition-colors">
+                        <CardContent className="pt-4 pb-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-foreground mb-1 truncate">
+                                {campaign.title}
+                              </h3>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                                <span>{progress.toFixed(0)}% completado</span>
+                              </div>
+                              <div className="flex items-baseline gap-1">
+                                <span className="text-sm font-semibold text-secondary">
+                                  ${campaign.currentAmount.toFixed(0)}
+                                </span>
+                                <span className="text-xs text-muted-foreground">USDC</span>
+                                <span className="text-xs text-muted-foreground mx-1">/</span>
+                                <span className="text-xs text-muted-foreground">
+                                  ${campaign.goalAmount.toFixed(0)} USDC
+                                </span>
+                              </div>
                             </div>
-                            <div className="flex items-baseline gap-1">
-                              <span className="text-sm font-semibold text-secondary">
-                                ${campaign.currentAmount.toFixed(0)}
-                              </span>
-                              <span className="text-xs text-muted-foreground">USDC</span>
-                              <span className="text-xs text-muted-foreground mx-1">/</span>
-                              <span className="text-xs text-muted-foreground">
-                                ${campaign.goalAmount.toFixed(0)} USDC
-                              </span>
-                            </div>
+                            <LinkIcon className="h-5 w-5 text-muted-foreground shrink-0" />
                           </div>
-                          <LinkIcon className="h-5 w-5 text-muted-foreground shrink-0" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  </div>
                 );
               })}
             </div>
