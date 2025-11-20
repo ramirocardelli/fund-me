@@ -181,12 +181,12 @@ export default function ProfilePage() {
                               </div>
                               <div className="flex items-baseline gap-1">
                                 <span className="text-sm font-semibold text-secondary">
-                                  ${campaign.currentAmount.toFixed(0)}
+                                  ${campaign.currentAmount.toLocaleString('es-AR', { maximumFractionDigits: 0 })}
                                 </span>
                                 <span className="text-xs text-muted-foreground">USDC</span>
                                 <span className="text-xs text-muted-foreground mx-1">/</span>
                                 <span className="text-xs text-muted-foreground">
-                                  ${campaign.goalAmount.toFixed(0)} USDC
+                                  ${campaign.goalAmount.toLocaleString('es-AR', { maximumFractionDigits: 0 })} USDC
                                 </span>
                               </div>
                             </div>
@@ -239,7 +239,7 @@ export default function ProfilePage() {
                             <div>
                               <div className="flex items-baseline gap-1">
                                 <span className="text-base font-bold text-secondary">
-                                  ${donation.amount.toFixed(0)}
+                                  ${donation.amount.toLocaleString('es-AR', { maximumFractionDigits: 0 })}
                                 </span>
                                 <span className="text-xs text-muted-foreground">USDC</span>
                               </div>

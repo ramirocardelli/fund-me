@@ -138,20 +138,20 @@ export function FundProjectDialog({ project, open, onOpenChange, onSuccess }: Fu
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Actual</span>
                 <span className="text-base font-semibold text-secondary">
-                  ${project.currentAmount.toFixed(0)} USDC
+                  ${project.currentAmount.toLocaleString('es-AR', { maximumFractionDigits: 0 })} USDC
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Meta</span>
                 <span className="text-base font-medium text-foreground">
-                  ${project.goalAmount.toFixed(0)} USDC
+                  ${project.goalAmount.toLocaleString('es-AR', { maximumFractionDigits: 0 })} USDC
                 </span>
               </div>
               <div className="pt-2 border-t border-border/50">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Falta</span>
                   <span className="text-lg font-bold text-foreground">
-                    ${remaining.toFixed(0)} USDC
+                    ${remaining.toLocaleString('es-AR', { maximumFractionDigits: 0 })} USDC
                   </span>
                 </div>
               </div>

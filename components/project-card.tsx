@@ -43,12 +43,12 @@ export function ProjectCard({ project, onFund }: ProjectCardProps) {
           <div>
             <div className="flex items-baseline gap-1">
               <span className="text-2xl font-bold text-secondary">
-                ${project.currentAmount.toFixed(0)}
+                ${project.currentAmount.toLocaleString('es-AR', { maximumFractionDigits: 0 })}
               </span>
               <span className="text-sm text-muted-foreground">USDC</span>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              de ${project.goalAmount.toFixed(0)} meta
+              de ${project.goalAmount.toLocaleString('es-AR', { maximumFractionDigits: 0 })} meta
             </p>
           </div>
           
@@ -57,7 +57,7 @@ export function ProjectCard({ project, onFund }: ProjectCardProps) {
               <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-secondary/10">
                 <TrendingUp className="h-3 w-3 text-secondary" />
                 <span className="text-xs font-semibold text-secondary">
-                  {progress.toFixed(0)}%
+                  {progress.toLocaleString('es-AR', { maximumFractionDigits: 0 })}%
                 </span>
               </div>
             </div>

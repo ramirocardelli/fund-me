@@ -61,7 +61,7 @@ export default function MyDonationsPage() {
           <CardContent>
             <div className="flex items-baseline gap-1">
               <p className="text-3xl font-bold text-secondary">
-                ${totalDonated.toFixed(0)}
+                ${totalDonated.toLocaleString('es-AR', { maximumFractionDigits: 0 })}
               </p>
               <span className="text-sm text-muted-foreground">USDC</span>
             </div>
@@ -97,7 +97,7 @@ export default function MyDonationsPage() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg font-bold text-secondary">
-                      ${donation.amount.toFixed(0)} USDC
+                      ${donation.amount.toLocaleString('es-AR', { maximumFractionDigits: 0 })} USDC
                     </CardTitle>
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Calendar className="h-3.5 w-3.5" />
