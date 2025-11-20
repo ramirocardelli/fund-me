@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ProjectCard } from '@/components/project-card';
 import { FundProjectDialog } from '@/components/fund-project-dialog';
-import { lemonSDK } from '@/lib/lemon-sdk-mock';
+import { authenticate, TransactionResult } from '@/lib/lemon-sdk-mock';
 import { getProjects } from '@/lib/storage';
 import { initializeDummyData } from '@/lib/dummy-data';
 import { Project } from '@/lib/types';
@@ -24,11 +24,11 @@ export default function Home() {
     // Inicializar datos dummy si no existen
     initializeDummyData();
     
-    const authenticate = async () => {
+    const doAuthenticate = async () => {
       try {
-        const response = await lemonSDK.authenticate();
+        const response = await authenticate();
         
-        if (response.result === "SUCCESS") {
+        if (response.result === TransactionResult.SUCCESS) {
           setAuthenticated(true);
           setAuthError(null);
           loadProjects();
@@ -42,7 +42,7 @@ export default function Home() {
       }
     };
 
-    authenticate();
+    doAuthenticate();
   }, []);
 
   const loadProjects = () => {

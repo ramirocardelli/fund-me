@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Donation } from '@/lib/types';
 import { getDonations } from '@/lib/storage';
 import { initializeDummyData } from '@/lib/dummy-data';
-import { lemonSDK } from '@/lib/lemon-sdk-mock';
+import { authenticate, TransactionResult } from '@/lib/lemon-sdk-mock';
 import { Spinner } from '@/components/ui/spinner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Heart, Calendar, TrendingUp } from 'lucide-react';
@@ -22,11 +22,11 @@ export default function MyDonationsPage() {
     // Inicializar datos dummy si no existen
     initializeDummyData();
     
-    const authenticate = async () => {
+    const doAuthenticate = async () => {
       try {
-        const response = await lemonSDK.authenticate();
+        const response = await authenticate();
         
-        if (response.result === 'SUCCESS') {
+        if (response.result === TransactionResult.SUCCESS) {
           setAuthenticated(true);
           setAuthError(null);
           loadDonations();
@@ -40,7 +40,7 @@ export default function MyDonationsPage() {
       }
     };
 
-    authenticate();
+    doAuthenticate();
   }, []);
 
   const loadDonations = () => {

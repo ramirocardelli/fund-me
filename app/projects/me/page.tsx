@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserProfile, Project, Donation } from '@/lib/types';
 import { getUserProfile, getProjects, getDonations } from '@/lib/storage';
 import { initializeDummyData } from '@/lib/dummy-data';
-import { lemonSDK } from '@/lib/lemon-sdk-mock';
+import { authenticate, TransactionResult } from '@/lib/lemon-sdk-mock';
 import { Spinner } from '@/components/ui/spinner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, User, Wallet, Calendar, TrendingUp, Heart, Plus, Link as LinkIcon } from 'lucide-react';
@@ -32,11 +32,11 @@ export default function ProfilePage() {
       loadProfileData(profileData);
     }
     
-    const authenticate = async () => {
+    const doAuthenticate = async () => {
       try {
-        const response = await lemonSDK.authenticate();
+        const response = await authenticate();
         
-        if (response.result === 'SUCCESS') {
+        if (response.result === TransactionResult.SUCCESS) {
           setAuthenticated(true);
           setAuthError(null);
           // Recargar datos después de autenticación
@@ -55,7 +55,7 @@ export default function ProfilePage() {
       }
     };
 
-    authenticate();
+    doAuthenticate();
   }, []);
 
   const loadProfileData = (userProfile?: UserProfile | null) => {
@@ -251,7 +251,7 @@ export default function ProfilePage() {
                               </span>
                             </div>
                           </div>
-                          <LinkIcon className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                          <LinkIcon className="h-5 w-5 text-muted-foreground shrink-0" />
                         </div>
                       </CardContent>
                     </Card>

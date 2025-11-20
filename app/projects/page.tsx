@@ -8,7 +8,7 @@ import { FundProjectDialog } from '@/components/fund-project-dialog';
 import { Project } from '@/lib/types';
 import { getProjects } from '@/lib/storage';
 import { initializeDummyData } from '@/lib/dummy-data';
-import { lemonSDK } from '@/lib/lemon-sdk-mock';
+import { authenticate, TransactionResult } from '@/lib/lemon-sdk-mock';
 import { Spinner } from '@/components/ui/spinner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Plus, Wallet, ArrowLeft } from 'lucide-react';
@@ -25,11 +25,11 @@ export default function ProjectsPage() {
     // Inicializar datos dummy si no existen
     initializeDummyData();
     
-    const authenticate = async () => {
+    const doAuthenticate = async () => {
       try {
-        const response = await lemonSDK.authenticate();
+        const response = await authenticate();
         
-        if (response.result === 'SUCCESS') {
+        if (response.result === TransactionResult.SUCCESS) {
           setAuthenticated(true);
           setAuthError(null);
           loadProjects();
@@ -43,7 +43,7 @@ export default function ProjectsPage() {
       }
     };
 
-    authenticate();
+    doAuthenticate();
   }, []);
 
   const loadProjects = () => {

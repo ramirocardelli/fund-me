@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Project, Donation } from '@/lib/types';
 import { updateProject, saveDonation } from '@/lib/storage';
-import { lemonSDK } from '@/lib/lemon-sdk-mock';
+import { authenticate, deposit, TransactionResult, TokenName } from '@/lib/lemon-sdk-mock';
 import { useToast } from '@/hooks/use-toast';
 import { Spinner } from '@/components/ui/spinner';
 
@@ -37,8 +37,8 @@ export function FundProjectDialog({ project, open, onOpenChange, onSuccess }: Fu
 
     if (isNaN(fundAmount) || fundAmount <= 0) {
       toast({
-        title: 'Invalid Amount',
-        description: 'Please enter a valid funding amount',
+        title: 'Monto Inválido',
+        description: 'Por favor ingresá un monto válido',
         variant: 'destructive',
       });
       return;
@@ -47,18 +47,40 @@ export function FundProjectDialog({ project, open, onOpenChange, onSuccess }: Fu
     setLoading(true);
 
     try {
-      // Process payment using Lemon SDK
-      const paymentResponse = await lemonSDK.deposit(
-        {
-          amount: fundAmount.toString(),
-          tokenName: 'USDC',
-        }
-      );
-
-      if (paymentResponse.result !== 'SUCCESS') {
+      // Authenticate to get donor's wallet address
+      const authResult = await authenticate();
+      
+      if (authResult.result !== TransactionResult.SUCCESS || !authResult.data) {
         toast({
-          title: 'Payment Failed',
-          description: paymentResponse.result || 'Failed to process payment',
+          title: 'Autenticación Fallida',
+          description: 'No se pudo autenticar tu billetera. Por favor intentá nuevamente.',
+          variant: 'destructive',
+        });
+        setLoading(false);
+        return;
+      }
+      
+      const donorAddress = authResult.data.wallet;
+
+      // Process payment using Lemon SDK
+      const paymentResponse = await deposit({
+        amount: fundAmount.toString(),
+        tokenName: TokenName.USDC,
+      });
+
+      if (paymentResponse.result === TransactionResult.CANCELLED) {
+        toast({
+          title: 'Pago Cancelado',
+          description: 'Cancelaste el pago',
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (paymentResponse.result !== TransactionResult.SUCCESS) {
+        toast({
+          title: 'Pago Fallido',
+          description: 'El pago no se pudo completar. Por favor intentá nuevamente.',
           variant: 'destructive',
         });
         setLoading(false);
@@ -74,14 +96,14 @@ export function FundProjectDialog({ project, open, onOpenChange, onSuccess }: Fu
         id: 'donation_' + Math.random().toString(36).substr(2, 9),
         projectId: project.id,
         amount: fundAmount,
-        donorAddress: '0x' + Math.random().toString(16).substr(2, 40), // Mock donor address
+        donorAddress,
         timestamp: new Date(),
       };
       saveDonation(donation);
 
       toast({
-        title: 'Success!',
-        description: `You've funded $${fundAmount.toFixed(2)} to ${project.title}`,
+        title: 'Donación Exitosa',
+        description: `Donaste $${fundAmount.toFixed(2)} a ${project.title}`,
       });
 
       setAmount('');
@@ -90,7 +112,7 @@ export function FundProjectDialog({ project, open, onOpenChange, onSuccess }: Fu
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to process funding. Please try again.',
+        description: 'Ocurrió un error al procesar el pago. Por favor intentá nuevamente.',
         variant: 'destructive',
       });
     } finally {

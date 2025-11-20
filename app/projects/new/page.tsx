@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { CreateProjectForm } from '@/components/create-project-form';
-import { lemonSDK } from '@/lib/lemon-sdk-mock';
+import { authenticate, TransactionResult } from '@/lib/lemon-sdk-mock';
 import { Spinner } from '@/components/ui/spinner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
@@ -16,11 +16,11 @@ export default function NewProjectPage() {
   const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
-    const authenticate = async () => {
+    const doAuthenticate = async () => {
       try {
-        const response = await lemonSDK.authenticate();
+        const response = await authenticate();
         
-        if (response.result === 'SUCCESS') {
+        if (response.result === TransactionResult.SUCCESS) {
           setAuthenticated(true);
           setAuthError(null);
         } else {
@@ -33,7 +33,7 @@ export default function NewProjectPage() {
       }
     };
 
-    authenticate();
+    doAuthenticate();
   }, []);
 
   const handleSuccess = () => {

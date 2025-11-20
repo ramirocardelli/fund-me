@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Project } from '@/lib/types';
 import { saveProject } from '@/lib/storage';
-import { lemonSDK } from '@/lib/lemon-sdk-mock';
+import { authenticate, deposit, TransactionResult, TokenName } from '@/lib/lemon-sdk-mock';
 import { useToast } from '@/hooks/use-toast';
 import { Spinner } from '@/components/ui/spinner';
 
@@ -26,7 +26,6 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
     goalAmount: '',
     initialDeposit: '',
     creatorName: '',
-    creatorAddress: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,7 +37,7 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
       const initialDeposit = parseFloat(formData.initialDeposit);
 
       // Validation
-      if (!formData.title || !formData.description || !formData.creatorName || !formData.creatorAddress) {
+      if (!formData.title || !formData.description || !formData.creatorName) {
         toast({
           title: 'Información Faltante',
           description: 'Por favor completá todos los campos requeridos',
@@ -68,16 +67,36 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
         return;
       }
 
+      // Authenticate to get user's wallet address
+      const authResult = await authenticate();
+      
+      if (authResult.result !== TransactionResult.SUCCESS) {
+        toast({
+          title: 'Autenticación Fallida',
+          description: authResult.result === TransactionResult.CANCELLED 
+            ? 'Autenticación cancelada' 
+            : 'No se pudo autenticar tu wallet',
+          variant: 'destructive',
+        });
+        setLoading(false);
+        return;
+      }
+
+      const creatorAddress = authResult.data.wallet;
+
       // Make initial deposit using Lemon SDK
       if (initialDeposit > 0) {
-        const paymentResponse = await lemonSDK.deposit({
+        const paymentResponse = await deposit({
           amount: initialDeposit.toString(),
-          tokenName: 'USDC',});
+          tokenName: TokenName.USDC,
+        });
         
-        if (paymentResponse.result !== 'SUCCESS') {
+        if (paymentResponse.result !== TransactionResult.SUCCESS) {
           toast({
             title: 'Pago Fallido',
-            description: paymentResponse.result || 'No se pudo procesar el depósito inicial',
+            description: paymentResponse.result === TransactionResult.CANCELLED
+              ? 'Depósito cancelado'
+              : 'No se pudo procesar el depósito inicial',
             variant: 'destructive',
           });
           setLoading(false);
@@ -92,7 +111,7 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
         description: formData.description,
         goalAmount,
         currentAmount: initialDeposit,
-        creatorAddress: formData.creatorAddress,
+        creatorAddress: creatorAddress,
         creatorName: formData.creatorName,
         createdAt: new Date(),
       };
