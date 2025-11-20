@@ -160,18 +160,18 @@ export default function ProjectDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <Progress value={progress} className="h-3" />
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Recaudado</p>
                   <div className="flex items-baseline gap-1">
-                    <p className="text-2xl font-bold">${project.currentAmount.toFixed(2)}</p>
+                    <p className="text-2xl font-bold">${project.currentAmount.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</p>
                     <span className="text-sm text-muted-foreground">USDC</span>
                   </div>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Meta</p>
                   <div className="flex items-baseline gap-1">
-                    <p className="text-2xl font-bold">${project.goalAmount.toFixed(2)}</p>
+                    <p className="text-2xl font-bold">${project.goalAmount.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</p>
                     <span className="text-sm text-muted-foreground">USDC</span>
                   </div>
                 </div>
@@ -179,7 +179,7 @@ export default function ProjectDetailPage() {
               {remaining > 0 && (
                 <div className="pt-4 border-t">
                   <p className="text-sm text-muted-foreground mb-2">
-                    Faltan ${remaining.toFixed(2)} USDC para alcanzar la meta
+                    Faltan ${remaining.toLocaleString('es-AR', { maximumFractionDigits: 0 })} USDC para alcanzar la meta
                   </p>
                   <Button
                     onClick={() => setShowFundDialog(true)}
