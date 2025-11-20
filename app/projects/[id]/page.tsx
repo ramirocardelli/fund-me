@@ -6,9 +6,11 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FundProjectDialog } from '@/components/fund-project-dialog';
+import { ShareButton } from '@/components/share-button';
 import { Project } from '@/lib/types';
 import { getProjectById } from '@/lib/storage';
-import { lemonSDK } from '@/lib/lemon-sdk-mock';
+import { initializeDummyData } from '@/lib/dummy-data';
+import { authenticate, TransactionResult } from '@/lib/lemon-sdk-mock';
 import { Spinner } from '@/components/ui/spinner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
@@ -26,16 +28,19 @@ export default function ProjectDetailPage() {
   const [showFundDialog, setShowFundDialog] = useState(false);
 
   useEffect(() => {
-    const authenticate = async () => {
+    // Inicializar datos dummy si no existen
+    initializeDummyData();
+    
+    const doAuthenticate = async () => {
       try {
-        const response = await lemonSDK.authenticate();
+        const response = await authenticate();
         
-        if (response.success) {
+        if (response.result === TransactionResult.SUCCESS) {
           setAuthenticated(true);
           setAuthError(null);
           loadProject();
         } else {
-          setAuthError(response.error || 'Authentication failed');
+          setAuthError(response.result || 'Authentication failed');
         }
       } catch (error) {
         setAuthError('Failed to connect to LemonCash. Please try again later.');
@@ -44,7 +49,7 @@ export default function ProjectDetailPage() {
       }
     };
 
-    authenticate();
+    doAuthenticate();
   }, [projectId]);
 
   const loadProject = () => {
@@ -62,8 +67,7 @@ export default function ProjectDetailPage() {
         <div className="text-center space-y-4">
           <Spinner className="h-12 w-12 text-secondary mx-auto" />
           <div>
-            <h2 className="text-xl font-semibold text-foreground">Connecting to LemonCash</h2>
-            <p className="text-sm text-muted-foreground mt-2">Authenticating your session...</p>
+            <h2 className="text-xl font-semibold text-foreground">Cargando</h2>
           </div>
         </div>
       </div>
@@ -113,15 +117,23 @@ export default function ProjectDetailPage() {
 
   const progress = (project.currentAmount / project.goalAmount) * 100;
   const remaining = project.goalAmount - project.currentAmount;
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
 
     return (
       <div className="min-h-screen bg-background pb-24">
         <main className="px-4 pt-6">
           {/* Project Header */}
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-foreground mb-4">
-              {project.title}
-            </h1>
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <h1 className="text-2xl font-bold text-foreground flex-1">
+                {project.title}
+              </h1>
+              <ShareButton 
+                url={currentUrl}
+                title={project.title}
+                description={project.description}
+              />
+            </div>
             
             <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-6">
               <div className="flex items-center gap-2">
@@ -147,20 +159,26 @@ export default function ProjectDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <Progress value={progress} className="h-3" />
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Recaudado</p>
-                  <p className="text-2xl font-bold">${project.currentAmount.toFixed(2)}</p>
+                  <div className="flex items-baseline gap-1">
+                    <p className="text-2xl font-bold">${project.currentAmount.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</p>
+                    <span className="text-sm text-muted-foreground">USDC</span>
+                  </div>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Meta</p>
-                  <p className="text-2xl font-bold">${project.goalAmount.toFixed(2)}</p>
+                  <div className="flex items-baseline gap-1">
+                    <p className="text-2xl font-bold">${project.goalAmount.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</p>
+                    <span className="text-sm text-muted-foreground">USDC</span>
+                  </div>
                 </div>
               </div>
               {remaining > 0 && (
                 <div className="pt-4 border-t">
                   <p className="text-sm text-muted-foreground mb-2">
-                    Faltan ${remaining.toFixed(2)} para alcanzar la meta
+                    Faltan ${remaining.toLocaleString('es-AR', { maximumFractionDigits: 0 })} USDC para alcanzar la meta
                   </p>
                   <Button
                     onClick={() => setShowFundDialog(true)}
@@ -199,7 +217,9 @@ export default function ProjectDetailPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Dirección</p>
-                  <p className="font-mono text-sm">{project.creatorAddress}</p>
+                  <p className="font-mono text-sm break-all">
+                    {project.creatorAddress.slice(0, 6)}...{project.creatorAddress.slice(-4)}
+                  </p>
                 </div>
               </div>
             </CardContent>

@@ -15,6 +15,18 @@ export function TabBar() {
     return pathname.startsWith(path);
   };
 
+  const isProfileActive = () => {
+    return pathname === '/projects/me' || pathname.startsWith('/projects/me/');
+  };
+
+  const isExploreActive = () => {
+    if (pathname === '/projects') return true;
+    if (isProfileActive()) return false;
+    if (pathname.includes('/new')) return false;
+    // Activo en rutas como /projects/[id]
+    return pathname.startsWith('/projects/') && pathname.split('/').length === 3;
+  };
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border/50">
       <div className="max-w-lg mx-auto">
@@ -41,33 +53,30 @@ export function TabBar() {
             href="/projects"
             className={cn(
               "flex flex-col items-center justify-center gap-1 flex-1 h-full transition-colors relative",
-              isActive('/projects') && !pathname.includes('/new')
+              isExploreActive()
                 ? "text-foreground" 
                 : "text-muted-foreground/70"
             )}
           >
             <Search className="h-[22px] w-[22px]" strokeWidth={2} />
             <span className="text-[11px] font-normal tracking-tight">Explorar</span>
-            {isActive('/projects') && !pathname.includes('/new') && (
+            {isExploreActive() && (
               <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-[3px] bg-foreground rounded-t-full" />
             )}
           </Link>
 
           {/* QR Scanner - Botón Central estilo Lemon */}
-          <button 
+          <Link 
             className="flex flex-col items-center justify-center flex-1 h-full relative -mt-1"
-            onClick={() => {
-              // TODO: Implementar scanner QR para campañas
-              console.log('QR Scanner - Coming soon');
-            }}
+            href="/qr"
           >
             <div className="w-[56px] h-[56px] rounded-full bg-secondary flex items-center justify-center shadow-lg relative -top-1">
               <div className="w-[52px] h-[52px] rounded-full bg-secondary flex items-center justify-center border-4 border-background relative">
                 <QrCode className="h-[26px] w-[26px] text-black" strokeWidth={2.5} />
-                <Heart className="h-[14px] w-[14px] text-secondary absolute" fill="#00D26B" stroke="none" />
+                <Heart className="h-[18px] w-[18px] text-black absolute" fill="black" stroke="none" />
               </div>
             </div>
-          </button>
+          </Link>
 
           {/* Mis Aportes */}
           <Link 
@@ -86,19 +95,19 @@ export function TabBar() {
             )}
           </Link>
 
-          {/* Mis Campañas */}
+          {/* Perfil */}
           <Link 
             href="/projects/me"
             className={cn(
               "flex flex-col items-center justify-center gap-1 flex-1 h-full transition-colors relative",
-              pathname.includes('/me') && pathname.includes('/projects')
+              isProfileActive()
                 ? "text-foreground" 
                 : "text-muted-foreground/70"
             )}
           >
             <User className="h-[22px] w-[22px]" strokeWidth={2} />
             <span className="text-[11px] font-normal tracking-tight">Perfil</span>
-            {pathname.includes('/me') && pathname.includes('/projects') && (
+            {isProfileActive() && (
               <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-[3px] bg-foreground rounded-t-full" />
             )}
           </Link>

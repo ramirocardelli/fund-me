@@ -1,16 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ProjectCard } from '@/components/project-card';
 import { FundProjectDialog } from '@/components/fund-project-dialog';
-import { lemonSDK } from '@/lib/lemon-sdk-mock';
+import { authenticate, TransactionResult } from '@/lib/lemon-sdk-mock';
 import { getProjects } from '@/lib/storage';
+import { initializeDummyData } from '@/lib/dummy-data';
 import { Project } from '@/lib/types';
 import { Spinner } from '@/components/ui/spinner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Plus, Heart } from 'lucide-react';
+import { AlertCircle, Heart } from 'lucide-react';
 
 export default function Home() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -21,16 +21,19 @@ export default function Home() {
   const [showFundDialog, setShowFundDialog] = useState(false);
 
   useEffect(() => {
-    const authenticate = async () => {
+    // Inicializar datos dummy si no existen
+    initializeDummyData();
+    
+    const doAuthenticate = async () => {
       try {
-        const response = await lemonSDK.authenticate();
+        const response = await authenticate();
         
-        if (response.success) {
+        if (response.result === TransactionResult.SUCCESS) {
           setAuthenticated(true);
           setAuthError(null);
           loadProjects();
         } else {
-          setAuthError(response.error || 'Authentication failed');
+          setAuthError(response.result || 'Authentication failed');
         }
       } catch (error) {
         setAuthError('Failed to connect to LemonCash. Please try again later.');
@@ -39,7 +42,7 @@ export default function Home() {
       }
     };
 
-    authenticate();
+    doAuthenticate();
   }, []);
 
   const loadProjects = () => {
@@ -127,19 +130,6 @@ export default function Home() {
             ))}
           </div>
         )}
-
-        {/* Botón Crear Campaña - Abajo de la lista */}
-        <div className="mt-8 pb-4">
-          <Link href="/projects/new">
-            <Button 
-              variant="outline" 
-              className="w-full h-14 border-dashed border-2 border-border hover:border-secondary hover:bg-secondary/5 transition-colors"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              <span>Crear Nueva Campaña</span>
-            </Button>
-          </Link>
-        </div>
       </main>
 
       {/* Fund Dialog */}

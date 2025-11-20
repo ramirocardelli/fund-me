@@ -45,7 +45,7 @@ export function ProjectCard({ project, onFund }: ProjectCardProps) {
               <span className="text-2xl font-bold text-secondary">
                 ${project.currentAmount.toFixed(0)}
               </span>
-              <span className="text-sm text-muted-foreground">ARS</span>
+              <span className="text-sm text-muted-foreground">USDC</span>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
               de ${project.goalAmount.toFixed(0)} meta

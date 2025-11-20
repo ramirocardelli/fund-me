@@ -12,9 +12,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Project } from '@/lib/types';
-import { updateProject } from '@/lib/storage';
-import { lemonSDK } from '@/lib/lemon-sdk-mock';
+import { Project, Donation } from '@/lib/types';
+import { updateProject, saveDonation } from '@/lib/storage';
+import { authenticate, deposit, TransactionResult, TokenName } from '@/lib/lemon-sdk-mock';
 import { useToast } from '@/hooks/use-toast';
 import { Spinner } from '@/components/ui/spinner';
 
@@ -37,8 +37,8 @@ export function FundProjectDialog({ project, open, onOpenChange, onSuccess }: Fu
 
     if (isNaN(fundAmount) || fundAmount <= 0) {
       toast({
-        title: 'Invalid Amount',
-        description: 'Please enter a valid funding amount',
+        title: 'Monto Inválido',
+        description: 'Por favor ingresá un monto válido',
         variant: 'destructive',
       });
       return;
@@ -47,13 +47,40 @@ export function FundProjectDialog({ project, open, onOpenChange, onSuccess }: Fu
     setLoading(true);
 
     try {
-      // Process payment using Lemon SDK
-      const paymentResponse = await lemonSDK.makePayment(fundAmount, project.creatorAddress);
-
-      if (!paymentResponse.success) {
+      // Authenticate to get donor's wallet address
+      const authResult = await authenticate();
+      
+      if (authResult.result !== TransactionResult.SUCCESS || !authResult.data) {
         toast({
-          title: 'Payment Failed',
-          description: paymentResponse.error || 'Failed to process payment',
+          title: 'Autenticación Fallida',
+          description: 'No se pudo autenticar tu billetera. Por favor intentá nuevamente.',
+          variant: 'destructive',
+        });
+        setLoading(false);
+        return;
+      }
+      
+      const donorAddress = authResult.data.wallet;
+
+      // Process payment using Lemon SDK
+      const paymentResponse = await deposit({
+        amount: fundAmount.toString(),
+        tokenName: TokenName.USDC,
+      });
+
+      if (paymentResponse.result === TransactionResult.CANCELLED) {
+        toast({
+          title: 'Pago Cancelado',
+          description: 'Cancelaste el pago',
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (paymentResponse.result !== TransactionResult.SUCCESS) {
+        toast({
+          title: 'Pago Fallido',
+          description: 'El pago no se pudo completar. Por favor intentá nuevamente.',
           variant: 'destructive',
         });
         setLoading(false);
@@ -64,9 +91,19 @@ export function FundProjectDialog({ project, open, onOpenChange, onSuccess }: Fu
       const newAmount = project.currentAmount + fundAmount;
       updateProject(project.id, { currentAmount: newAmount });
 
+      // Save donation
+      const donation: Donation = {
+        id: 'donation_' + Math.random().toString(36).substr(2, 9),
+        projectId: project.id,
+        amount: fundAmount,
+        donorAddress,
+        timestamp: new Date(),
+      };
+      saveDonation(donation);
+
       toast({
-        title: 'Success!',
-        description: `You've funded $${fundAmount.toFixed(2)} to ${project.title}`,
+        title: 'Donación Exitosa',
+        description: `Donaste $${fundAmount.toFixed(2)} a ${project.title}`,
       });
 
       setAmount('');
@@ -75,7 +112,7 @@ export function FundProjectDialog({ project, open, onOpenChange, onSuccess }: Fu
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to process funding. Please try again.',
+        description: 'Ocurrió un error al procesar el pago. Por favor intentá nuevamente.',
         variant: 'destructive',
       });
     } finally {
@@ -101,20 +138,20 @@ export function FundProjectDialog({ project, open, onOpenChange, onSuccess }: Fu
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Actual</span>
                 <span className="text-base font-semibold text-secondary">
-                  ${project.currentAmount.toFixed(0)} ARS
+                  ${project.currentAmount.toFixed(0)} USDC
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Meta</span>
                 <span className="text-base font-medium text-foreground">
-                  ${project.goalAmount.toFixed(0)} ARS
+                  ${project.goalAmount.toFixed(0)} USDC
                 </span>
               </div>
               <div className="pt-2 border-t border-border/50">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Falta</span>
                   <span className="text-lg font-bold text-foreground">
-                    ${remaining.toFixed(0)} ARS
+                    ${remaining.toFixed(0)} USDC
                   </span>
                 </div>
               </div>
@@ -136,7 +173,7 @@ export function FundProjectDialog({ project, open, onOpenChange, onSuccess }: Fu
                   autoFocus
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
-                  ARS
+                  USDC
                 </div>
               </div>
             </div>

@@ -7,7 +7,8 @@ import { ProjectCard } from '@/components/project-card';
 import { FundProjectDialog } from '@/components/fund-project-dialog';
 import { Project } from '@/lib/types';
 import { getProjects } from '@/lib/storage';
-import { lemonSDK } from '@/lib/lemon-sdk-mock';
+import { initializeDummyData } from '@/lib/dummy-data';
+import { authenticate, TransactionResult } from '@/lib/lemon-sdk-mock';
 import { Spinner } from '@/components/ui/spinner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Plus, Wallet, ArrowLeft } from 'lucide-react';
@@ -21,16 +22,19 @@ export default function ProjectsPage() {
   const [showFundDialog, setShowFundDialog] = useState(false);
 
   useEffect(() => {
-    const authenticate = async () => {
+    // Inicializar datos dummy si no existen
+    initializeDummyData();
+    
+    const doAuthenticate = async () => {
       try {
-        const response = await lemonSDK.authenticate();
+        const response = await authenticate();
         
-        if (response.success) {
+        if (response.result === TransactionResult.SUCCESS) {
           setAuthenticated(true);
           setAuthError(null);
           loadProjects();
         } else {
-          setAuthError(response.error || 'Authentication failed');
+          setAuthError(response.result || 'Authentication failed');
         }
       } catch (error) {
         setAuthError('Failed to connect to LemonCash. Please try again later.');
@@ -39,7 +43,7 @@ export default function ProjectsPage() {
       }
     };
 
-    authenticate();
+    doAuthenticate();
   }, []);
 
   const loadProjects = () => {
@@ -61,8 +65,7 @@ export default function ProjectsPage() {
         <div className="text-center space-y-4">
           <Spinner className="h-12 w-12 text-secondary mx-auto" />
           <div>
-            <h2 className="text-xl font-semibold text-foreground">Connecting to LemonCash</h2>
-            <p className="text-sm text-muted-foreground mt-2">Authenticating your session...</p>
+            <h2 className="text-xl font-semibold text-foreground">Cargando</h2>
           </div>
         </div>
       </div>

@@ -17,3 +17,17 @@ export interface Donation {
   donorAddress: string;
   timestamp: Date;
 }
+
+export interface UserProfile {
+  id: string;
+  username: string;
+  walletAddress: string;
+  avatar?: string;
+  bio?: string;
+  createdAt: Date;
+  stats: {
+    campaignsCreated: number;
+    totalDonated: number;
+    donationsCount: number;
+  };
+}
