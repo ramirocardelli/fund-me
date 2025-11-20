@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { authenticate, TransactionResult } from '@/lib/lemon-sdk-mock';
+import { authenticate, TransactionResult, isWebView } from '@lemoncash/mini-app-sdk';
 import { initializeDummyData } from '@/lib/dummy-data';
 import { Spinner } from '@/components/ui/spinner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -12,12 +12,14 @@ interface AuthContextType {
   authenticated: boolean;
   loading: boolean;
   error: string | null;
+  wallet: string | null;
 }
 
 const AuthContext = createContext<AuthContextType>({
   authenticated: false,
   loading: true,
   error: null,
+  wallet: null,
 });
 
 export function useAuth() {
@@ -28,6 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authenticated, setAuthenticated] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [wallet, setWallet] = useState<string | null>(null);
 
   useEffect(() => {
     // Initialize dummy data
@@ -35,16 +38,103 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     const doAuthenticate = async () => {
       try {
-        const response = await authenticate();
+        // First check if we have an existing session
+        const sessionResponse = await fetch('/api/auth/session');
         
-        if (response.result === TransactionResult.SUCCESS) {
-          setAuthenticated(true);
-          setAuthError(null);
-        } else {
-          setAuthError(response.result || 'Authentication failed');
+        if (sessionResponse.ok) {
+          const sessionData = await sessionResponse.json();
+          if (sessionData.authenticated) {
+            setAuthenticated(true);
+            setWallet(sessionData.wallet);
+            setAuthLoading(false);
+            return;
+          }
         }
+        
+        // Check if running in WebView
+        if (!isWebView()) {
+          setAuthError('Esta aplicación solo funciona dentro de Lemon Cash');
+          setAuthLoading(false);
+          return;
+        }
+        
+        // Get nonce from backend
+        const nonceResponse = await fetch('/api/auth/nonce', {
+          method: 'POST',
+        });
+        
+        if (!nonceResponse.ok) {
+          throw new Error('Failed to get nonce from backend');
+        }
+        
+        const { nonce } = await nonceResponse.json();
+        
+        // Authenticate with Lemon SDK using the nonce
+        const result = await authenticate({ nonce });
+        
+        if (result.result === TransactionResult.CANCELLED) {
+          setAuthError('Autenticación cancelada');
+          setAuthLoading(false);
+          return;
+        }
+        
+        if (result.result === TransactionResult.FAILED) {
+          setAuthError(result.error?.message || 'Authentication failed');
+          setAuthLoading(false);
+          return;
+        }
+        
+        const { wallet: userWallet, signature, message } = result.data;
+        
+        // Verify signature on backend
+        const verifyResponse = await fetch('/api/auth/verify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            wallet: userWallet,
+            signature,
+            message,
+            nonce,
+          }),
+        });
+        
+        if (!verifyResponse.ok) {
+          throw new Error('Failed to verify signature');
+        }
+        
+        const verifyData = await verifyResponse.json();
+        
+        if (!verifyData.verified) {
+          throw new Error('Invalid signature');
+        }
+        
+        // Create session on backend
+        const sessionCreateResponse = await fetch('/api/auth/session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            wallet: userWallet,
+          }),
+        });
+        
+        if (!sessionCreateResponse.ok) {
+          throw new Error('Failed to create session');
+        }
+        
+        setAuthenticated(true);
+        setWallet(userWallet);
+        setAuthError(null);
       } catch (error) {
-        setAuthError('Failed to connect to LemonCash. Please try again later.');
+        console.error('Authentication error:', error);
+        setAuthError(
+          error instanceof Error 
+            ? error.message 
+            : 'Failed to connect to LemonCash. Please try again later.'
+        );
       } finally {
         setAuthLoading(false);
       }
@@ -59,7 +149,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         <div className="text-center space-y-4">
           <Spinner className="h-12 w-12 text-secondary mx-auto" />
           <div>
-            <h2 className="text-xl font-semibold text-foreground">Cargando</h2>
+            <h2 className="text-xl font-semibold text-foreground">Conectando con Lemon Cash</h2>
+            <p className="text-sm text-muted-foreground mt-2">Autenticando tu sesión...</p>
           </div>
         </div>
       </div>
@@ -88,8 +179,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ authenticated, loading: authLoading, error: authError }}>
+    <AuthContext.Provider value={{ authenticated, loading: authLoading, error: authError, wallet }}>
       {children}
     </AuthContext.Provider>
   );
 }
+

@@ -103,13 +103,14 @@ export function generateDummyProjects(): Project[] {
 
 /**
  * Genera datos dummy para donaciones
+ * Las donaciones se generan de forma consistente: la suma de donaciones por proyecto
+ * debe ser igual al currentAmount de ese proyecto
  */
-export function generateDummyDonations(projectIds: string[]): Donation[] {
+export function generateDummyDonations(projects: Project[]): Donation[] {
   const now = new Date();
   const donations: Donation[] = [];
+  let donationId = 1;
   
-  // Generar donaciones para diferentes campañas
-  const amounts = [5000, 10000, 15000, 20000, 25000, 30000, 50000, 75000, 100000];
   const donorAddresses = [
     '0x1234567890123456789012345678901234567890', // Wallet del perfil dummy (primera)
     '0x1111111111111111111111111111111111111111',
@@ -119,25 +120,56 @@ export function generateDummyDonations(projectIds: string[]): Donation[] {
     '0x5555555555555555555555555555555555555555',
   ];
 
-  // Crear 15 donaciones distribuidas en diferentes fechas
-  for (let i = 0; i < 15; i++) {
-    const daysAgo = Math.floor(Math.random() * 30); // Últimos 30 días
-    const timestamp = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
-    const projectId = projectIds[Math.floor(Math.random() * projectIds.length)];
-    const amount = amounts[Math.floor(Math.random() * amounts.length)];
-    // Hacer que aproximadamente 1/3 de las donaciones sean del usuario del perfil
-    const donorAddress = i < 5 
-      ? '0x1234567890123456789012345678901234567890' 
-      : donorAddresses[Math.floor(Math.random() * donorAddresses.length)];
+  // Generar donaciones para cada proyecto
+  projects.forEach((project, projectIndex) => {
+    if (project.currentAmount === 0) return;
+    
+    // Calcular cuántas donaciones hacer para este proyecto (entre 2 y 6)
+    const numDonations = Math.min(
+      Math.floor(Math.random() * 5) + 2,
+      Math.max(2, Math.floor(project.currentAmount / 10000))
+    );
+    
+    let remainingAmount = project.currentAmount;
+    const projectCreationDate = new Date(project.createdAt);
+    const daysSinceCreation = Math.floor((now.getTime() - projectCreationDate.getTime()) / (24 * 60 * 60 * 1000));
+    
+    for (let i = 0; i < numDonations; i++) {
+      // Para la última donación, usar el monto restante exacto
+      let amount: number;
+      if (i === numDonations - 1) {
+        amount = remainingAmount;
+      } else {
+        // Calcular un monto aleatorio que no exceda el monto restante
+        // y que sea al menos 5% del monto restante
+        const minAmount = Math.max(5000, Math.floor(remainingAmount * 0.05));
+        const maxAmount = Math.floor(remainingAmount * 0.5); // Máximo 50% del restante
+        amount = Math.floor(Math.random() * (maxAmount - minAmount + 1)) + minAmount;
+        // Redondear a miles
+        amount = Math.round(amount / 1000) * 1000;
+      }
+      
+      remainingAmount -= amount;
+      
+      // Generar una fecha entre la creación del proyecto y ahora
+      const daysAfterCreation = Math.floor(Math.random() * Math.max(1, daysSinceCreation));
+      const timestamp = new Date(projectCreationDate.getTime() + daysAfterCreation * 24 * 60 * 60 * 1000);
+      
+      // Hacer que aproximadamente 30% de las donaciones sean del usuario del perfil
+      const useProfileWallet = Math.random() < 0.3;
+      const donorAddress = useProfileWallet
+        ? '0x1234567890123456789012345678901234567890'
+        : donorAddresses[Math.floor(Math.random() * (donorAddresses.length - 1)) + 1];
 
-    donations.push({
-      id: `donation_${i + 1}`,
-      projectId,
-      amount,
-      donorAddress,
-      timestamp,
-    });
-  }
+      donations.push({
+        id: `donation_${donationId++}`,
+        projectId: project.id,
+        amount,
+        donorAddress,
+        timestamp,
+      });
+    }
+  });
 
   // Ordenar por fecha más reciente primero
   return donations.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());

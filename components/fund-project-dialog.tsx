@@ -14,9 +14,9 @@ import {
 } from '@/components/ui/dialog';
 import { Project, Donation } from '@/lib/types';
 import { updateProject, saveDonation } from '@/lib/storage';
-import { authenticate, deposit, TransactionResult, TokenName } from '@/lib/lemon-sdk-mock';
 import { useToast } from '@/hooks/use-toast';
 import { Spinner } from '@/components/ui/spinner';
+import { authenticate, deposit, TokenName, TransactionResult } from '@lemoncash/mini-app-sdk';
 
 interface FundProjectDialogProps {
   project: Project | null;
