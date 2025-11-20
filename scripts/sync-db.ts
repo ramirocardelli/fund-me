@@ -3,6 +3,11 @@
  * Run with: npx ts-node scripts/sync-db.ts
  */
 
+import dotenv from 'dotenv';
+
+// Load environment variables from .env.local
+dotenv.config({ path: '.env.local' });
+
 import { initDatabase } from '../lib/infrastructure/database/init';
 
 async function main() {

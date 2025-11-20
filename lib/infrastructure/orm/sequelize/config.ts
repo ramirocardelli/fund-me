@@ -1,4 +1,5 @@
 import { Sequelize } from 'sequelize';
+import pg from 'pg';
 
 /**
  * Sequelize Configuration for Neon PostgreSQL
@@ -22,6 +23,7 @@ export const getSequelizeInstance = (): Sequelize => {
 
   sequelize = new Sequelize(databaseUrl, {
     dialect: 'postgres',
+    dialectModule: pg,  // Explícitamente proveer pg para Turbopack
     dialectOptions: {
       ssl: {
         require: true,

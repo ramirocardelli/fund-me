@@ -1,14 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Project } from '@/lib/types';
-import { saveProject } from '@/lib/storage';
-import { lemonSDK } from '@/lib/lemon-sdk-mock';
 import { useToast } from '@/hooks/use-toast';
 import { Spinner } from '@/components/ui/spinner';
 
@@ -24,9 +22,10 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
     title: '',
     description: '',
     goalAmount: '',
-    initialDeposit: '',
-    creatorName: '',
-    creatorAddress: '',
+    goalCurrency: 'USD',
+    imageUrl: '',
+    startDate: '',
+    endDate: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,13 +34,22 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
 
     try {
       const goalAmount = parseFloat(formData.goalAmount);
-      const initialDeposit = parseFloat(formData.initialDeposit);
 
       // Validation
-      if (!formData.title || !formData.description || !formData.creatorName || !formData.creatorAddress) {
+      if (!formData.title.trim()) {
         toast({
-          title: 'Información Faltante',
-          description: 'Por favor completá todos los campos requeridos',
+          title: 'Título Requerido',
+          description: 'Por favor ingresá un título para la campaña',
+          variant: 'destructive',
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (!formData.description.trim()) {
+        toast({
+          title: 'Descripción Requerida',
+          description: 'Por favor ingresá una descripción para la campaña',
           variant: 'destructive',
         });
         setLoading(false);
@@ -51,31 +59,22 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
       if (isNaN(goalAmount) || goalAmount <= 0) {
         toast({
           title: 'Monto Objetivo Inválido',
-          description: 'Por favor ingresá un monto objetivo válido',
+          description: 'Por favor ingresá un monto objetivo válido mayor a 0',
           variant: 'destructive',
         });
         setLoading(false);
         return;
       }
 
-      if (isNaN(initialDeposit) || initialDeposit < 0) {
-        toast({
-          title: 'Depósito Inicial Inválido',
-          description: 'Por favor ingresá un monto de depósito inicial válido',
-          variant: 'destructive',
-        });
-        setLoading(false);
-        return;
-      }
-
-      // Make initial deposit using Lemon SDK
-      if (initialDeposit > 0) {
-        const paymentResponse = await lemonSDK.makePayment(initialDeposit, formData.creatorAddress);
+      // Validar fechas si se proporcionan ambas
+      if (formData.startDate && formData.endDate) {
+        const startDate = new Date(formData.startDate);
+        const endDate = new Date(formData.endDate);
         
-        if (!paymentResponse.success) {
+        if (startDate > endDate) {
           toast({
-            title: 'Pago Fallido',
-            description: paymentResponse.error || 'No se pudo procesar el depósito inicial',
+            title: 'Fechas Inválidas',
+            description: 'La fecha de inicio debe ser anterior a la fecha de fin',
             variant: 'destructive',
           });
           setLoading(false);
@@ -83,30 +82,34 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
         }
       }
 
-      // Create project
-      const newProject: Project = {
-        id: 'project_' + Math.random().toString(36).substr(2, 9),
+      // Crear campaña usando el API endpoint
+      const payload = {
         title: formData.title,
         description: formData.description,
         goalAmount,
-        currentAmount: initialDeposit,
-        creatorAddress: formData.creatorAddress,
-        creatorName: formData.creatorName,
-        createdAt: new Date(),
+        goalCurrency: formData.goalCurrency,
+        imageUrl: formData.imageUrl || null,
+        startDate: formData.startDate || null,
+        endDate: formData.endDate || null,
       };
 
-      saveProject(newProject);
+      const response = await axios.post('/api/campaigns', payload);
 
-      toast({
-        title: '¡Campaña Creada!',
-        description: 'Tu campaña de crowdfunding ha sido creada exitosamente',
-      });
-
-      onSuccess();
-    } catch (error) {
+      if (response.data.success) {
+        toast({
+          title: '¡Campaña Creada!',
+          description: 'Tu campaña de crowdfunding ha sido creada exitosamente',
+        });
+        onSuccess();
+      } else {
+        throw new Error(response.data.error || 'Error al crear la campaña');
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || error.message || 'No se pudo crear la campaña';
+      
       toast({
         title: 'Error',
-        description: 'No se pudo crear la campaña. Por favor intentá nuevamente.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -149,24 +152,25 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="creatorName" className="text-foreground">Tu Nombre *</Label>
+            <Label htmlFor="imageUrl" className="text-foreground">URL de Imagen</Label>
             <Input
-              id="creatorName"
-              value={formData.creatorName}
-              onChange={(e) => setFormData({ ...formData, creatorName: e.target.value })}
-              placeholder="Juan Pérez"
+              id="imageUrl"
+              type="url"
+              value={formData.imageUrl}
+              onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+              placeholder="https://ejemplo.com/imagen.jpg"
               className="bg-input text-foreground border-border"
-              required
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="goalAmount" className="text-foreground">Monto Objetivo (USD) *</Label>
+              <Label htmlFor="goalAmount" className="text-foreground">Monto Objetivo *</Label>
               <Input
                 id="goalAmount"
                 type="number"
                 step="0.01"
+                min="0.01"
                 value={formData.goalAmount}
                 onChange={(e) => setFormData({ ...formData, goalAmount: e.target.value })}
                 placeholder="1000.00"
@@ -176,14 +180,37 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="initialDeposit" className="text-foreground">Depósito Inicial (USD)</Label>
+              <Label htmlFor="goalCurrency" className="text-foreground">Moneda *</Label>
               <Input
-                id="initialDeposit"
-                type="number"
-                step="0.01"
-                value={formData.initialDeposit}
-                onChange={(e) => setFormData({ ...formData, initialDeposit: e.target.value })}
-                placeholder="0.00"
+                id="goalCurrency"
+                value={formData.goalCurrency}
+                onChange={(e) => setFormData({ ...formData, goalCurrency: e.target.value })}
+                placeholder="USD"
+                className="bg-input text-foreground border-border"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="startDate" className="text-foreground">Fecha de Inicio</Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={formData.startDate}
+                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                className="bg-input text-foreground border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="endDate" className="text-foreground">Fecha de Fin</Label>
+              <Input
+                id="endDate"
+                type="date"
+                value={formData.endDate}
+                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                 className="bg-input text-foreground border-border"
               />
             </div>
